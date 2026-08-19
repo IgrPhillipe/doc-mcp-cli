@@ -23,26 +23,26 @@ class CliChat(Chat):
     async def list_docs_ids(self) -> list[str]:
         return await self.doc_client.read_resource("docs://documents")
 
-    async def get_doc_content(self, doc_id: str) -> str:
-        return await self.doc_client.read_resource(f"docs://documents/{doc_id}")
+    async def get_doc_content(self, document_id: str) -> str:
+        return await self.doc_client.read_resource(f"docs://documents/{document_id}")
 
-    async def get_prompt(self, command: str, doc_id: str) -> list[PromptMessage]:
-        return await self.doc_client.get_prompt(command, {"doc_id": doc_id})
+    async def get_prompt(self, command: str, document_id: str) -> list[PromptMessage]:
+        return await self.doc_client.get_prompt(command, {"document_id": document_id})
 
     async def _extract_resources(self, query: str) -> str:
         mentions = [word[1:] for word in query.split() if word.startswith("@")]
 
-        doc_ids = await self.list_docs_ids()
+        document_ids = await self.list_docs_ids()
         mentioned_docs: list[tuple[str, str]] = []
 
-        for doc_id in doc_ids:
-            if doc_id in mentions:
-                content = await self.get_doc_content(doc_id)
-                mentioned_docs.append((doc_id, content))
+        for document_id in document_ids:
+            if document_id in mentions:
+                content = await self.get_doc_content(document_id)
+                mentioned_docs.append((document_id, content))
 
         return "".join(
-            f'\n<document id="{doc_id}">\n{content}\n</document>\n'
-            for doc_id, content in mentioned_docs
+            f'\n<document id="{document_id}">\n{content}\n</document>\n'
+            for document_id, content in mentioned_docs
         )
 
     async def _process_command(self, query: str) -> bool:
@@ -52,7 +52,7 @@ class CliChat(Chat):
         words = query.split()
         command = words[0].replace("/", "")
 
-        messages = await self.doc_client.get_prompt(command, {"doc_id": words[1]})
+        messages = await self.doc_client.get_prompt(command, {"document_id": words[1]})
 
         self.messages += convert_prompt_messages_to_message_params(messages)
         return True
